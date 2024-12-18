@@ -1,16 +1,16 @@
-# sz_rabbit_consumer
+# sz_rabbit_consumer-v4
+
+Ported Senzing Rabbit MQ consumer for the Senzing v4 beta
 
 # Overview
-Simple parallel JSON data processor using the Senzing API and is meant to provide developers with a simple starting point for a simple, scalable addRecord processor.
-
-It is a limited function [more or less] drop in replacement for the senzing/stream-loader when used for RabbitMQ.  The latest code requires Senzing 3.5 or newer.
+Simple parallel JSON data processor using the Senzing SDK and is meant to provide developers with a simple starting point for a simple, scalable add_record processor.
 
 # API demonstrated
 ### Core
-* addRecord[WithInfo]: Adds the Senzing JSON record
+* add_record: Adds the Senzing JSON record
 ### Supporting
-* init: To initialize the G2Engine object
-* stats: To retrieve internal engine diagnostic information as to what is going on in the engine
+* senzing_core.SzAbstractFactory: To initialize the Sz environment
+* get_stats: To retrieve internal engine diagnostic information as to what is going on in the engine
 
 For more details on the Senzing API go to https://docs.senzing.com
 
