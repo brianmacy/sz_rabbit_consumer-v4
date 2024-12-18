@@ -14,7 +14,16 @@ import time
 import random
 import pika
 
-from senzing import G2Engine, G2Exception, G2EngineFlags, G2RetryTimeoutExceededException, G2BadInputException
+from senzing import (
+    SzConfig,
+    SzConfigManager,
+    SzEngine,
+    SzEngineFlags,
+    SzBadInputError,
+    SzRetryTimeoutExceededError,
+)
+
+import senzing_core
 
 INTERVAL = 10000
 LONG_RECORD = 300
@@ -33,13 +42,14 @@ def process_msg(engine, msg, info):
     try:
         record = orjson.loads(msg)
         if info:
-            response = bytearray()
-            engine.addRecordWithInfo(
-                record["DATA_SOURCE"], record["RECORD_ID"], msg.decode(), response
+            response = engine.add_record(
+                record["DATA_SOURCE"], record["RECORD_ID"], msg.decode(), SzEngineFlags.SZ_WITH_INFO
             )
-            return response.decode()
+            return response
         else:
-            engine.addRecord(record["DATA_SOURCE"], record["RECORD_ID"], msg.decode())
+            response = engine.add_record(
+                record["DATA_SOURCE"], record["RECORD_ID"], msg.decode() 
+            )
             return None
     except Exception as err:
         print(f"{err} [{msg}]", file=sys.stderr)
@@ -110,12 +120,10 @@ try:
         max_workers = None
 
     # Initialize the G2Engine
-    g2 = G2Engine()
-    g2.init("sz_rabbit_consumer", engine_config, args.debugTrace)
-    logCheckTime = prevTime = time.time()
+    factory = senzing_core.SzAbstractFactory("sz_rabbit_consumer", engine_config, verbose_logging=args.debugTrace)
+    g2 = factory.create_engine()
 
-    senzing_governor = importlib.import_module("senzing_governor")
-    governor = senzing_governor.Governor(hint="sz_rabbit_consumer")
+    logCheckTime = prevTime = time.time()
 
     params = pika.URLParameters(args.url)
     with pika.BlockingConnection(params) as conn:
@@ -152,7 +160,7 @@ try:
                                     TUPLE_ACKED
                                 ]:  # if we rejected a message before we should not ack it here
                                     ch.basic_ack(msg[TUPLE_MSG][MSG_FRAME].delivery_tag)
-                            except (G2RetryTimeoutExceededException, G2BadInputException) as err:
+                            except (SzRetryTimeoutExceededError, SzBadInputError) as err:
                                 if not msg[
                                     TUPLE_ACKED
                                 ]:  # if we rejected a message before we should not ack it here
@@ -231,14 +239,15 @@ try:
                         continue
 
                     # Really want something that forces an "I'm alive" to the server
-                    pauseSeconds = governor.govern()
+                    # switch to getDatasourceInfo
+                    #pauseSeconds = governor.govern()
                     # either governor fully triggered or our executor is full
                     # not going to get more messages
-                    if pauseSeconds < 0.0:
-                        conn.sleep(1)  # process rabbitmq protocol for 1s
-                        continue
-                    if pauseSeconds > 0.0:
-                        conn.sleep(pauseSeconds)
+                    #if pauseSeconds < 0.0:
+                    #    conn.sleep(1)  # process rabbitmq protocol for 1s
+                    #    continue
+                    #if pauseSeconds > 0.0:
+                    #    conn.sleep(pauseSeconds)
 
                     while len(futures) < executor._max_workers:
                         try:
