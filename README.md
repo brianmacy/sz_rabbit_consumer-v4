@@ -12,7 +12,7 @@ Simple parallel JSON data processor using the Senzing SDK and is meant to provid
 * senzing_core.SzAbstractFactory: To initialize the Sz environment
 * get_stats: To retrieve internal engine diagnostic information as to what is going on in the engine
 
-For more details on the Senzing API go to https://docs.senzing.com
+For more details on the Senzing SDK go to https://docs.senzing.com
 
 # Details
 
