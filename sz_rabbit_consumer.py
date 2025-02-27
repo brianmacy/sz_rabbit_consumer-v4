@@ -190,9 +190,8 @@ try:
                         ):  # log long running records
                             logCheckTime = nowTime
 
-                            response = bytearray()
-                            g2.stats(response)
-                            print(f"\n{response.decode()}\n")
+                            response = g2.stats(response)
+                            print(f"\n{response}\n")
 
                             numStuck = 0
                             numRejected = 0
