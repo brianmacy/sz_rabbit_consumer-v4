@@ -190,7 +190,7 @@ try:
                         ):  # log long running records
                             logCheckTime = nowTime
 
-                            response = g2.stats(response)
+                            response = g2.get_stats()
                             print(f"\n{response}\n")
 
                             numStuck = 0
