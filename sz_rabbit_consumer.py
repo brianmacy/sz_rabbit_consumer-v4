@@ -120,7 +120,7 @@ try:
         max_workers = None
 
     # Initialize the G2Engine
-    factory = senzing_core.SzAbstractFactory("sz_rabbit_consumer", engine_config, verbose_logging=args.debugTrace)
+    factory = senzing_core.SzAbstractFactoryCore("sz_rabbit_consumer", engine_config, verbose_logging=args.debugTrace)
     g2 = factory.create_engine()
 
     logCheckTime = prevTime = time.time()
