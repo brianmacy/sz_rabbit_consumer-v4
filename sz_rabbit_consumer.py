@@ -172,6 +172,22 @@ try:
                                       msg[TUPLE_MSG][MSG_FRAME].delivery_tag,
                                       requeue=False,
                                   )
+                            except Exception as err:
+                                # Check for unmapped error codes that should be treated as bad input
+                                # SENZ0082: DQM plugin error (e.g., invalid name like "**")
+                                err_str = str(err)
+                                if "SENZ0082" in err_str:
+                                    if not msg[TUPLE_ACKED]:
+                                        record = orjson.loads(msg[TUPLE_MSG][MSG_BODY])
+                                        print(
+                                            f'REJECTING due to bad data or timeout: {record["DATA_SOURCE"]} : {record["RECORD_ID"]}'
+                                        )
+                                        ch.basic_reject(
+                                            msg[TUPLE_MSG][MSG_FRAME].delivery_tag,
+                                            requeue=False,
+                                        )
+                                else:
+                                    raise
 
                             messages += 1
 
