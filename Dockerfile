@@ -1,7 +1,7 @@
 # docker build -t brian/sz_rabbit_consumer .
 # docker run --user $UID -it -v $PWD:/data -e SENZING_ENGINE_CONFIGURATION_JSON brian/sz_rabbit_consumer
 
-ARG BASE_IMAGE=senzing/senzingsdk-runtime:4.3.2
+ARG BASE_IMAGE=senzing/senzingsdk-runtime:4.3.3
 FROM ${BASE_IMAGE}
 
 LABEL Name="brain/sz_rabbit_consumer" \
