@@ -7,17 +7,12 @@ import orjson
 import logging
 import traceback
 
-import importlib
 import sys
 import os
 import time
-import random
 import pika
 
 from senzing import (
-    SzConfig,
-    SzConfigManager,
-    SzEngine,
     SzEngineFlags,
     SzBadInputError,
     SzRetryTimeoutExceededError,
@@ -160,7 +155,7 @@ try:
                                     TUPLE_ACKED
                                 ]:  # if we rejected a message before we should not ack it here
                                     ch.basic_ack(msg[TUPLE_MSG][MSG_FRAME].delivery_tag)
-                            except (SzRetryTimeoutExceededError, SzBadInputError) as err:
+                            except (SzRetryTimeoutExceededError, SzBadInputError):
                                 if not msg[
                                     TUPLE_ACKED
                                 ]:  # if we rejected a message before we should not ack it here
