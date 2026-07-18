@@ -1,4 +1,4 @@
 # Dependencies for sz_rabbit_consumer-v4
 orjson==3.11.8
-pika==1.4.0
+pika==1.4.1
 werkzeug==3.1.8
