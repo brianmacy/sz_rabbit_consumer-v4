@@ -1,24 +1,20 @@
 #! /usr/bin/env python3
 
-import concurrent.futures
-
 import argparse
-import orjson
+import concurrent.futures
 import logging
-import traceback
-
-import sys
 import os
+import sys
 import time
-import pika
 
+import orjson
+import pika
+import senzing_core
 from senzing import (
-    SzEngineFlags,
     SzBadInputError,
+    SzEngineFlags,
     SzRetryTimeoutExceededError,
 )
-
-import senzing_core
 
 INTERVAL = 10000
 LONG_RECORD = 300
@@ -31,6 +27,7 @@ TUPLE_STARTTIME = 1
 TUPLE_ACKED = 2
 
 log_format = "%(asctime)s %(message)s"
+logger = logging.getLogger(__name__)
 
 
 def process_msg(engine, msg, info):
@@ -102,7 +99,7 @@ try:
             "Please see https://senzing.zendesk.com/hc/en-us/articles/360038774134-G2Module-Configuration-and-the-Senzing-API",
             file=sys.stderr,
         )
-        exit(-1)
+        sys.exit(-1)
 
     if not args.queue:
         args.queue = os.getenv("SENZING_RABBITMQ_QUEUE")
@@ -110,7 +107,7 @@ try:
     if not args.url:
         args.url = os.getenv("SENZING_AMQP_URL")
 
-    max_workers = int(os.getenv("SENZING_THREADS_PER_PROCESS", 0))
+    max_workers = int(os.getenv("SENZING_THREADS_PER_PROCESS", "0"))
     if not max_workers:  # reset to null for executors
         max_workers = None
 
@@ -279,11 +276,9 @@ try:
                 print(f"Processed total of {messages} adds")
 
             except Exception as err:
-                print(
-                    f"{type(err).__name__}: Shutting down due to error: {err}",
-                    file=sys.stderr,
+                logger.exception(
+                    "%s: Shutting down due to error", type(err).__name__
                 )
-                traceback.print_exc()
                 nowTime = time.time()
                 for fut, msg in futures.items():
                     if not fut.done():
@@ -294,9 +289,8 @@ try:
                         )
                 executor.shutdown()
                 conn.close()
-                exit(-1)
+                sys.exit(-1)
 
-except Exception as err:
-    print(err, file=sys.stderr)
-    traceback.print_exc()
-    exit(-1)
+except Exception:
+    logger.exception("Fatal error")
+    sys.exit(-1)
